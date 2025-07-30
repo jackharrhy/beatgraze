@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Beatgraze</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #639 0%, #36b 50%, #09c 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(136, 17, 119, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .audio-card {
+            background: rgba(238, 221, 0, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(238, 221, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .audio-card:hover {
+            transform: translateY(-5px);
+            background: rgba(238, 221, 0, 0.2);
+        }
+
+        .audio-card.playing {
+            background: rgba(153, 221, 85, 0.2);
+            border-color: #9d5;
+        }
+
+        .folder-tag {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .folder-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .folder-tag:empty {
+            display: none;
+        }
+
+        .file-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            word-break: break-word;
+        }
+
+        .waveform {
+            height: 60px;
+            background: rgba(136, 17, 119, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .waveform canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #4d8;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .play-btn:hover {
+            background: #2cb;
+        }
+
+        .duration {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .pagination button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            background: #4d8;
+        }
+
+        .pagination-info {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-hint {
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 0.5rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #4d8;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .search-results-info {
+            text-align: center;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🎵 Beatgraze</h1>
+        <p>Click any track to play</p>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search audio files..." />
+        <div class="search-hint">Try: "kick", "dir:drums", or click folder tags</div>
+    </div>
+
+    <div id="searchInfo" class="search-results-info" style="display: none;"></div>
+    <div id="loading" class="loading">Loading audio files...</div>
+    <div id="grid" class="grid" style="display: none;"></div>
+    <div id="pagination" class="pagination" style="display: none;"></div>
+
+    <script type="module">
+        class AudioPlayer {
+            constructor() {
+                this.audioContext = null;
+                this.currentAudio = null;
+                this.currentCard = null;
+                this.analyser = null;
+                this.dataArray = null;
+                this.animationId = null;
+                this.waveformData = new Map(); // Cache waveform data
+            }
+
+            async initAudioContext() {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+            }
+
+            async play(audioFile, card) {
+                await this.initAudioContext();
+
+                if (this.currentAudio) {
+                    this.stop();
+                }
+
+                this.currentCard = card;
+                this.currentAudio = new Audio(`/audio/${audioFile.path}`);
+
+                // Generate waveform if not cached
+                if (!this.waveformData.has(audioFile.path)) {
+                    await this.generateWaveform(audioFile);
+                }
+
+                card.classList.add('playing');
+                const playBtn = card.querySelector('.play-btn');
+                playBtn.textContent = '⏸️';
+
+                this.currentAudio.addEventListener('ended', () => {
+                    this.stop();
+                });
+
+                this.currentAudio.addEventListener('loadedmetadata', () => {
+                    const duration = this.currentAudio.duration;
+                    const durationSpan = card.querySelector('.duration');
+                    durationSpan.textContent = this.formatTime(duration);
+                });
+
+                this.currentAudio.play();
+                this.startWaveformVisualization(card, audioFile);
+            }
+
+            stop() {
+                if (this.currentAudio) {
+                    this.currentAudio.pause();
+                    this.currentAudio = null;
+                }
+
+                if (this.currentCard) {
+                    this.currentCard.classList.remove('playing');
+                    const playBtn = this.currentCard.querySelector('.play-btn');
+                    playBtn.textContent = '▶️';
+                    this.currentCard = null;
+                }
+
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+
+            async generateWaveform(audioFile) {
+                try {
+                    const response = await fetch(`/audio/${audioFile.path}`);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+
+                    const channelData = audioBuffer.getChannelData(0);
+                    const samples = 500; // Resolution for waveform
+                    const blockSize = Math.floor(channelData.length / samples);
+                    const waveform = [];
+
+                    for (let i = 0; i < samples; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < blockSize; j++) {
+                            sum += Math.abs(channelData[i * blockSize + j] || 0);
+                        }
+                        waveform.push(sum / blockSize);
+                    }
+
+                    // Normalize
+                    const max = Math.max(...waveform);
+                    const normalized = waveform.map(val => val / max);
+
+                    this.waveformData.set(audioFile.path, {
+                        data: normalized,
+                        duration: audioBuffer.duration
+                    });
+                } catch (error) {
+                    console.error('Error generating waveform:', error);
+                    // Fallback to random data
+                    const fallback = Array.from({ length: 500 }, () => Math.random());
+                    this.waveformData.set(audioFile.path, {
+                        data: fallback,
+                        duration: 0
+                    });
+                }
+            }
+
+            startWaveformVisualization(card, audioFile) {
+                const visualCanvas = card.querySelector('canvas');
+                const ctx = visualCanvas.getContext('2d');
+                visualCanvas.width = visualCanvas.offsetWidth;
+                visualCanvas.height = visualCanvas.offsetHeight;
+
+                const waveform = this.waveformData.get(audioFile.path);
+                if (!waveform) return;
+
+                const colors = ['#817', '#a35', '#c66', '#e94', '#ed0', '#9d5', '#4d8', '#2cb', '#0bc', '#09c', '#36b', '#639'];
+
+                const draw = () => {
+                    if (!this.currentAudio) return;
+
+                    ctx.fillStyle = 'rgba(136, 17, 119, 0.2)';
+                    ctx.fillRect(0, 0, visualCanvas.width, visualCanvas.height);
+                    const barWidth = visualCanvas.width / waveform.data.length;
+                    const currentTime = this.currentAudio.currentTime;
+                    const duration = this.currentAudio.duration || waveform.duration;
+                    const progress = duration > 0 ? currentTime / duration : 0;
+                    const currentBar = Math.floor(progress * waveform.data.length);
+
+                    for (let i = 0; i < waveform.data.length; i++) {
+                        const barHeight = waveform.data[i] * visualCanvas.height * 0.8;
+                        const x = i * barWidth;
+                        const y = (visualCanvas.height - barHeight) / 2;
+
+                        // Color based on playback position
+                        let color;
+                        if (i <= currentBar) {
+                            // Played portion - use vibrant colors
+                            const colorIndex = Math.floor((i / waveform.data.length) * colors.length);
+                            color = colors[colorIndex];
+                        } else {
+                            // Unplayed portion - use muted colors
+                            const colorIndex = Math.floor((i / waveform.data.length) * colors.length);
+                            color = colors[colorIndex] + '40';
+                        }
+
+                        ctx.fillStyle = color;
+                        ctx.fillRect(x, y, barWidth - 1, barHeight);
+                    }
+
+                    // Draw playback position indicator
+                    const playheadX = progress * visualCanvas.width;
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(playheadX - 1, 0, 2, visualCanvas.height);
+
+                    this.animationId = requestAnimationFrame(draw);
+                };
+
+                draw();
+            }
+
+            formatTime(seconds) {
+                if (!seconds || !isFinite(seconds)) return '--:--';
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            generateStaticWaveform(canvas, audioFile) {
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+
+                ctx.fillStyle = 'rgba(136, 17, 119, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // If we have cached waveform data, use it
+                if (this.waveformData.has(audioFile.path)) {
+                    const waveform = this.waveformData.get(audioFile.path);
+                    const colors = ['#817', '#a35', '#c66', '#e94', '#ed0', '#9d5', '#4d8', '#2cb', '#0bc', '#09c', '#36b', '#639'];
+                    const barWidth = canvas.width / waveform.data.length;
+
+                    for (let i = 0; i < waveform.data.length; i++) {
+                        const barHeight = waveform.data[i] * canvas.height * 0.8;
+                        const x = i * barWidth;
+                        const y = (canvas.height - barHeight) / 2;
+                        const colorIndex = Math.floor((i / waveform.data.length) * colors.length);
+                        ctx.fillStyle = colors[colorIndex] + '60';
+                        ctx.fillRect(x, y, barWidth - 1, barHeight);
+                    }
+                } else {
+                    // Fallback to random waveform
+                    const colors = ['#817', '#a35', '#c66', '#e94', '#ed0', '#9d5', '#4d8', '#2cb', '#0bc', '#09c', '#36b', '#639'];
+                    const bars = 100;
+                    const barWidth = canvas.width / bars;
+
+                    for (let i = 0; i < bars; i++) {
+                        const height = Math.random() * canvas.height * 0.8;
+                        const x = i * barWidth;
+                        const y = (canvas.height - height) / 2;
+                        const colorIndex = Math.floor((i / bars) * colors.length);
+                        ctx.fillStyle = colors[colorIndex] + '60';
+                        ctx.fillRect(x, y, barWidth - 1, height);
+                    }
+                }
+            }
+        }
+
+        const player = new AudioPlayer();
+
+        function createAudioCard(audioFile) {
+            const card = document.createElement('div');
+            card.className = 'audio-card';
+
+            // Create folder tag if folder exists
+            if (audioFile.folder) {
+                const folderTag = document.createElement('div');
+                folderTag.className = 'folder-tag';
+                folderTag.dataset.folder = audioFile.folder;
+                folderTag.textContent = audioFile.folder;
+                card.appendChild(folderTag);
+            }
+
+            // Create file name element
+            const fileName = document.createElement('div');
+            fileName.className = 'file-name';
+            fileName.textContent = audioFile.name;
+            card.appendChild(fileName);
+
+            // Create waveform container
+            const waveform = document.createElement('div');
+            waveform.className = 'waveform';
+            const waveformCanvas = document.createElement('canvas');
+            waveform.appendChild(waveformCanvas);
+            card.appendChild(waveform);
+
+            // Create controls container
+            const controls = document.createElement('div');
+            controls.className = 'controls';
+
+            let playBtn = document.createElement('button');
+            playBtn.className = 'play-btn';
+            playBtn.textContent = '▶️';
+            controls.appendChild(playBtn);
+
+            const duration = document.createElement('span');
+            duration.className = 'duration';
+            duration.textContent = '--:--';
+            controls.appendChild(duration);
+
+            card.appendChild(controls);
+
+            const cardCanvas = card.querySelector('canvas');
+
+            // Pre-generate waveform for better UX
+            player.initAudioContext().then(() => {
+                player.generateWaveform(audioFile).then(() => {
+                    player.generateStaticWaveform(cardCanvas, audioFile);
+                });
+            }).catch(() => {
+                player.generateStaticWaveform(cardCanvas, audioFile);
+            });
+
+            playBtn = card.querySelector('.play-btn');
+            playBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (player.currentCard === card) {
+                    player.stop();
+                } else {
+                    player.play(audioFile, card);
+                }
+            });
+
+            // Add folder tag click handler
+            const folderTag = card.querySelector('.folder-tag');
+            if (folderTag) {
+                folderTag.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent card click
+                    const folder = folderTag.dataset.folder;
+                    const searchBox = document.getElementById('searchBox');
+                    searchBox.value = `dir:${folder}`;
+                    performSearch(`dir:${folder}`);
+                });
+            }
+
+            card.addEventListener('click', () => {
+                if (player.currentCard === card) {
+                    player.stop();
+                } else {
+                    player.play(audioFile, card);
+                }
+            });
+
+            return card;
+        }
+
+        let currentPage = 1;
+        let totalPages = 1;
+        let perPage = 200;
+        let currentSearch = '';
+        let searchTimeout = null;
+
+        async function loadAudioFiles(page = 1, search = '') {
+            try {
+                const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+                const response = await fetch(`/api/files?page=${page}&perPage=${perPage}${searchParam}`);
+                const data = await response.json();
+
+                const loading = document.getElementById('loading');
+                const grid = document.getElementById('grid');
+                const pagination = document.getElementById('pagination');
+                const searchInfo = document.getElementById('searchInfo');
+
+                loading.style.display = 'none';
+                grid.style.display = 'grid';
+
+                // Clear existing content
+                grid.innerHTML = '';
+
+                // Update search info
+                if (search) {
+                    searchInfo.style.display = 'block';
+                    searchInfo.textContent = `Found ${data.total} files matching "${search}"`;
+                } else {
+                    searchInfo.style.display = 'none';
+                }
+
+                if (data.files.length === 0) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.gridColumn = '1/-1';
+                    messageDiv.style.textAlign = 'center';
+                    messageDiv.style.padding = '2rem';
+                    
+                    if (search) {
+                        messageDiv.textContent = `No files found matching "${search}"`;
+                    } else {
+                        messageDiv.textContent = 'No audio files found in current directory';
+                    }
+                    
+                    grid.innerHTML = '';
+                    grid.appendChild(messageDiv);
+                    pagination.style.display = 'none';
+                    return;
+                }
+
+                // Update pagination state
+                currentPage = data.page;
+                totalPages = data.totalPages;
+
+                // Create cards for current page
+                data.files.forEach(audioFile => {
+                    const card = createAudioCard(audioFile);
+                    grid.appendChild(card);
+                });
+
+                // Show pagination if needed
+                if (totalPages > 1) {
+                    updatePagination(data);
+                    pagination.style.display = 'flex';
+                } else {
+                    pagination.style.display = 'none';
+                }
+
+            } catch (error) {
+                console.error('Error loading audio files:', error);
+                document.getElementById('loading').textContent = 'Error loading audio files';
+            }
+        }
+
+        function updatePagination(data) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '← Previous';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    loadAudioFiles(currentPage - 1, currentSearch);
+                }
+            });
+            pagination.appendChild(prevBtn);
+
+            // Page info
+            const pageInfo = document.createElement('div');
+            pageInfo.className = 'pagination-info';
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${data.total} files)`;
+            pagination.appendChild(pageInfo);
+
+            // Page numbers (show current and nearby pages)
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.textContent = '1';
+                firstBtn.addEventListener('click', () => loadAudioFiles(1, currentSearch));
+                pagination.appendChild(firstBtn);
+
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.color = 'rgba(255,255,255,0.5)';
+                    pagination.appendChild(ellipsis);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i.toString();
+                if (i === currentPage) {
+                    pageBtn.className = 'current-page';
+                }
+                pageBtn.addEventListener('click', () => loadAudioFiles(i, currentSearch));
+                pagination.appendChild(pageBtn);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.color = 'rgba(255,255,255,0.5)';
+                    pagination.appendChild(ellipsis);
+                }
+
+                const lastBtn = document.createElement('button');
+                lastBtn.textContent = totalPages.toString();
+                lastBtn.addEventListener('click', () => loadAudioFiles(totalPages, currentSearch));
+                pagination.appendChild(lastBtn);
+            }
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next →';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    loadAudioFiles(currentPage + 1, currentSearch);
+                }
+            });
+            pagination.appendChild(nextBtn);
+        }
+
+        function debounceSearch(func, delay) {
+            return function (...args) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        function performSearch(searchTerm) {
+            currentSearch = searchTerm;
+            currentPage = 1; // Reset to first page on new search
+            loadAudioFiles(1, searchTerm);
+        }
+
+        const debouncedSearch = debounceSearch(performSearch, 300);
+
+        // Set up search box event listener
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            debouncedSearch(searchTerm);
+        });
+
+        // Clear search on Escape key
+        document.getElementById('searchBox').addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                e.target.value = '';
+                performSearch('');
+            }
+        });
+
+        loadAudioFiles();
+    </script>
+</body>
+
+</html>
