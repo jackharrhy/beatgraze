@@ -170,13 +170,32 @@ func getAudioFiles(w http.ResponseWriter, r *http.Request) {
 
 		// Check for dir: syntax
 		if strings.HasPrefix(searchQuery, "dir:") {
-			dirFilter := strings.TrimSpace(strings.TrimPrefix(searchQuery, "dir:"))
+			dirQuery := strings.TrimSpace(strings.TrimPrefix(searchQuery, "dir:"))
 			// Remove leading ./ if present
-			dirFilter = strings.TrimPrefix(dirFilter, "./")
+			dirQuery = strings.TrimPrefix(dirQuery, "./")
+
+			// Split by space to separate directory and filename filters
+			parts := strings.SplitN(dirQuery, " ", 2)
+			dirFilter := parts[0]
+			var filenameFilter string
+			if len(parts) > 1 {
+				filenameFilter = strings.TrimSpace(parts[1])
+			}
 
 			for _, file := range audioFiles {
-				if file.Folder == dirFilter || (dirFilter == "" && file.Folder == "") {
-					filteredFiles = append(filteredFiles, file)
+				// Check if file is in the specified directory
+				dirMatch := file.Folder == dirFilter || (dirFilter == "" && file.Folder == "")
+
+				if dirMatch {
+					// If no filename filter, include all files in the directory
+					if filenameFilter == "" {
+						filteredFiles = append(filteredFiles, file)
+					} else {
+						// Apply case-insensitive filename filter
+						if strings.Contains(strings.ToLower(file.Name), strings.ToLower(filenameFilter)) {
+							filteredFiles = append(filteredFiles, file)
+						}
+					}
 				}
 			}
 		} else {
@@ -191,8 +210,7 @@ func getAudioFiles(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		audioFiles = filteredFiles
-	}
-	// Sort files by name for consistent pagination
+	} // Sort files by name for consistent pagination
 	sort.Slice(audioFiles, func(i, j int) bool {
 		return audioFiles[i].Name < audioFiles[j].Name
 	})

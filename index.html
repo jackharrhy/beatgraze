@@ -219,18 +219,241 @@
             color: rgba(255, 255, 255, 0.8);
             font-size: 0.9rem;
         }
+
+        .volume-control {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 2rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .volume-label {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .volume-slider {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #4d8;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: #2cb;
+            transform: scale(1.1);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #4d8;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .volume-slider::-moz-range-thumb:hover {
+            background: #2cb;
+            transform: scale(1.1);
+        }
+
+        .volume-value {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .midi-interface {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            min-width: 250px;
+        }
+
+        .midi-interface h3 {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .midi-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .midi-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f44;
+            transition: all 0.3s ease;
+        }
+
+        .midi-indicator.connected {
+            background: #4d8;
+            box-shadow: 0 0 8px #4d8;
+        }
+
+        .midi-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .midi-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .midi-control-label {
+            min-width: 80px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .midi-control-value {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            min-width: 40px;
+        }
+
+        .midi-keys {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 0.5rem;
+            height: 60px;
+            align-items: flex-end;
+        }
+
+        .midi-key {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px 4px 0 0;
+            transition: all 0.1s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .midi-key.active {
+            background: #4d8;
+            box-shadow: 0 0 8px #4d8;
+        }
+
+        .midi-key:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .midi-key.active:hover {
+            background: #2cb;
+        }
+
+        .last-sound-info {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+
+        .midi-help {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 0.5rem;
+            line-height: 1.3;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #639 0%, #36b 50%, #09c 100%);
+            min-height: 100vh;
+            color: white;
+            padding-top: 60px;
+        }
     </style>
 </head>
 
 <body>
+    <div class="volume-control">
+        <span class="volume-label">🔊 Volume</span>
+        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="50">
+        <span id="volumeValue" class="volume-value">50%</span>
+    </div>
+
+    <div class="midi-interface">
+        <h3>🎹 MIDI Interface</h3>
+        <div class="midi-status">
+            <div id="midiIndicator" class="midi-indicator"></div>
+            <span id="midiStatus">No MIDI device connected</span>
+        </div>
+        <div class="midi-controls">
+            <div class="midi-control">
+                <span class="midi-control-label">Note:</span>
+                <span id="midiNote" class="midi-control-value">--</span>
+            </div>
+            <div class="midi-control">
+                <span class="midi-control-label">Velocity:</span>
+                <span id="midiVelocity" class="midi-control-value">--</span>
+            </div>
+            <div class="midi-control">
+                <span class="midi-control-label">Pitch:</span>
+                <span id="midiPitch" class="midi-control-value">1.00x</span>
+            </div>
+        </div>
+        <div class="midi-keys" id="midiKeys">
+            <!-- MIDI keys will be generated here -->
+        </div>
+        <div id="lastSoundInfo" class="last-sound-info">No sound played yet</div>
+        <div class="midi-help">
+            Connect a MIDI device and press keys to play the last sound at different pitches
+        </div>
+    </div>
+
     <div class="header">
         <h1>🎵 Beatgraze</h1>
         <p>Click any track to play</p>
     </div>
-
     <div class="search-container">
         <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search audio files..." />
-        <div class="search-hint">Try: "kick", "dir:drums", or click folder tags</div>
+        <div class="search-hint">Try: "kick", "dir:drums", "dir:ST-02 bass", or click folder tags</div>
     </div>
 
     <div id="searchInfo" class="search-results-info" style="display: none;"></div>
@@ -248,8 +471,15 @@
                 this.dataArray = null;
                 this.animationId = null;
                 this.waveformData = new Map(); // Cache waveform data
+                this.volume = 0.5; // Default volume (50%)
+                this.lastPlayedSound = null; // Store last played sound
+                this.lastAudioBuffer = null; // Store last audio buffer
+                this.pitch = 1.0; // Current pitch multiplier
+                this.midiAccess = null; // Web MIDI API access
+                this.midiInput = null; // MIDI input device
+                this.activeMidiNotes = new Set(); // Track active MIDI notes
+                this.midiSources = new Map(); // Track active MIDI audio sources
             }
-
             async initAudioContext() {
                 if (!this.audioContext) {
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -267,35 +497,284 @@
                 }
 
                 this.currentCard = card;
-                this.currentAudio = new Audio(`/audio/${audioFile.path}`);
-
+                
+                // Store the last played sound for MIDI interface
+                this.lastPlayedSound = audioFile;
+                this.updateLastSoundInfo();
+                
                 // Generate waveform if not cached
                 if (!this.waveformData.has(audioFile.path)) {
                     await this.generateWaveform(audioFile);
                 }
 
-                card.classList.add('playing');
-                const playBtn = card.querySelector('.play-btn');
-                playBtn.textContent = '⏸️';
+                // Use Web Audio API for pitch control
+                await this.playWithPitch(audioFile, card);
+            }
 
-                this.currentAudio.addEventListener('ended', () => {
-                    this.stop();
-                });
+            async playWithPitch(audioFile, card) {
+                try {
+                    // Fetch and decode audio
+                    const response = await fetch(`/audio/${audioFile.path}`);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    
+                    // Store the buffer for mini interface
+                    this.lastAudioBuffer = audioBuffer;
 
-                this.currentAudio.addEventListener('loadedmetadata', () => {
-                    const duration = this.currentAudio.duration;
+                    // Create audio source
+                    const source = this.audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+
+                    // Create gain node for volume
+                    const gainNode = this.audioContext.createGain();
+                    gainNode.gain.value = this.volume;
+
+                    // Create pitch shifter (using playbackRate)
+                    source.playbackRate.value = this.pitch;
+
+                    // Connect nodes
+                    source.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+
+                    // Store references for stopping
+                    this.currentAudio = source;
+                    this.currentGainNode = gainNode;
+
+                    // Update UI
+                    card.classList.add('playing');
+                    const playBtn = card.querySelector('.play-btn');
+                    playBtn.textContent = '⏸️';
+
+                    // Handle end of playback
+                    source.onended = () => {
+                        this.stop();
+                    };
+
+                    // Update duration display
+                    const duration = audioBuffer.duration;
                     const durationSpan = card.querySelector('.duration');
                     durationSpan.textContent = this.formatTime(duration);
-                });
 
-                this.currentAudio.play();
-                this.startWaveformVisualization(card, audioFile);
+                    // Start playback
+                    source.start(0);
+                    this.startWaveformVisualization(card, audioFile);
+
+                } catch (error) {
+                    console.error('Error playing with pitch:', error);
+                    // Fallback to regular audio
+                    this.currentAudio = new Audio(`/audio/${audioFile.path}`);
+                    this.currentAudio.volume = this.volume;
+                    this.currentAudio.play();
+                }
+            }
+
+
+
+            setPitch(pitch) {
+                this.pitch = pitch;
+                // Update pitch display
+                const pitchValue = document.getElementById('midiPitch');
+                if (pitchValue) {
+                    pitchValue.textContent = `${pitch.toFixed(2)}x`;
+                }
+            }
+
+            updateLastSoundInfo() {
+                if (!this.lastPlayedSound) return;
+
+                const lastSoundInfo = document.getElementById('lastSoundInfo');
+                if (lastSoundInfo) {
+                    lastSoundInfo.textContent = `Last: ${this.lastPlayedSound.name}`;
+                }
+            }
+
+            async initMIDI() {
+                if (!navigator.requestMIDIAccess) {
+                    console.log('Web MIDI API not supported');
+                    this.updateMIDIStatus('Web MIDI API not supported', false);
+                    return;
+                }
+
+                try {
+                    this.midiAccess = await navigator.requestMIDIAccess();
+                    this.updateMIDIStatus('MIDI access granted', true);
+                    
+                    // Set up MIDI input
+                    const inputs = Array.from(this.midiAccess.inputs.values());
+                    if (inputs.length > 0) {
+                        this.midiInput = inputs[0];
+                        this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
+                        this.updateMIDIStatus(`Connected to ${this.midiInput.name}`, true);
+                    } else {
+                        this.updateMIDIStatus('No MIDI devices found', false);
+                    }
+
+                    // Listen for new MIDI devices
+                    this.midiAccess.onstatechange = () => {
+                        const inputs = Array.from(this.midiAccess.inputs.values());
+                        if (inputs.length > 0 && !this.midiInput) {
+                            this.midiInput = inputs[0];
+                            this.midiInput.onmidimessage = (event) => this.handleMIDIMessage(event);
+                            this.updateMIDIStatus(`Connected to ${this.midiInput.name}`, true);
+                        }
+                    };
+
+                } catch (error) {
+                    console.error('MIDI access denied:', error);
+                    this.updateMIDIStatus('MIDI access denied', false);
+                }
+            }
+
+            updateMIDIStatus(message, connected) {
+                const statusElement = document.getElementById('midiStatus');
+                const indicatorElement = document.getElementById('midiIndicator');
+                
+                if (statusElement) {
+                    statusElement.textContent = message;
+                }
+                
+                if (indicatorElement) {
+                    if (connected) {
+                        indicatorElement.classList.add('connected');
+                    } else {
+                        indicatorElement.classList.remove('connected');
+                    }
+                }
+            }
+
+            handleMIDIMessage(event) {
+                const [status, note, velocity] = event.data;
+                const command = status >> 4;
+                const channel = status & 0x0F;
+
+                // Update display
+                const noteElement = document.getElementById('midiNote');
+                const velocityElement = document.getElementById('midiVelocity');
+                
+                if (noteElement) noteElement.textContent = note;
+                if (velocityElement) velocityElement.textContent = velocity;
+
+                // Handle note on/off
+                if (command === 0x9 && velocity > 0) { // Note On
+                    this.handleNoteOn(note, velocity);
+                } else if (command === 0x8 || (command === 0x9 && velocity === 0)) { // Note Off
+                    this.handleNoteOff(note);
+                }
+            }
+
+            handleNoteOn(note, velocity) {
+                this.activeMidiNotes.add(note);
+                this.updateMIDIKeys();
+                
+                // Calculate pitch from MIDI note (A4 = 440Hz, note 69)
+                const pitch = Math.pow(2, (note - 69) / 12);
+                this.setPitch(pitch);
+                
+                // Play the last sound with this pitch
+                this.playLastSoundWithPitch();
+            }
+
+            handleNoteOff(note) {
+                this.activeMidiNotes.delete(note);
+                this.updateMIDIKeys();
+                
+                // Stop any audio sources for this note
+                if (this.midiSources.has(note)) {
+                    const source = this.midiSources.get(note);
+                    if (source.stop) {
+                        source.stop();
+                    }
+                    this.midiSources.delete(note);
+                }
+            }
+
+            updateMIDIKeys() {
+                const keysContainer = document.getElementById('midiKeys');
+                if (!keysContainer) return;
+
+                // Generate 12 keys (one octave)
+                keysContainer.innerHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    const key = document.createElement('div');
+                    key.className = 'midi-key';
+                    key.dataset.note = i;
+                    
+                    // Check if this note is active
+                    const noteNumber = 60 + i; // Start from middle C
+                    if (this.activeMidiNotes.has(noteNumber)) {
+                        key.classList.add('active');
+                    }
+                    
+                    // Add click handler for testing
+                    key.addEventListener('click', () => {
+                        this.handleNoteOn(noteNumber, 100);
+                        setTimeout(() => this.handleNoteOff(noteNumber), 500);
+                    });
+                    
+                    keysContainer.appendChild(key);
+                }
+            }
+
+            async playLastSoundWithPitch() {
+                if (!this.lastPlayedSound || !this.lastAudioBuffer) {
+                    console.log('No last sound to play');
+                    return;
+                }
+
+                await this.initAudioContext();
+
+                try {
+                    // Create audio source
+                    const source = this.audioContext.createBufferSource();
+                    source.buffer = this.lastAudioBuffer;
+
+                    // Create gain node for volume
+                    const gainNode = this.audioContext.createGain();
+                    gainNode.gain.value = this.volume * 0.5; // Reduce volume for MIDI playback
+
+                    // Apply pitch
+                    source.playbackRate.value = this.pitch;
+
+                    // Connect nodes
+                    source.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+
+                    // Store reference for stopping
+                    const currentNote = Array.from(this.activeMidiNotes).pop();
+                    if (currentNote) {
+                        this.midiSources.set(currentNote, source);
+                    }
+
+                    // Handle end of playback
+                    source.onended = () => {
+                        if (currentNote) {
+                            this.midiSources.delete(currentNote);
+                        }
+                    };
+
+                    // Start playback
+                    source.start(0);
+
+                } catch (error) {
+                    console.error('Error playing last sound with pitch:', error);
+                }
             }
 
             stop() {
                 if (this.currentAudio) {
-                    this.currentAudio.pause();
+                    if (this.currentAudio.stop) {
+                        // Web Audio API source
+                        this.currentAudio.stop();
+                    } else {
+                        // Regular HTML5 audio
+                        this.currentAudio.pause();
+                    }
                     this.currentAudio = null;
+                }
+
+                if (this.currentGainNode) {
+                    this.currentGainNode.disconnect();
+                    this.currentGainNode = null;
                 }
 
                 if (this.currentCard) {
@@ -500,12 +979,11 @@
             player.initAudioContext().then(() => {
                 player.generateWaveform(audioFile).then(() => {
                     player.generateStaticWaveform(cardCanvas, audioFile);
+                }).catch(() => {
+                    player.generateStaticWaveform(cardCanvas, audioFile);
                 });
-            }).catch(() => {
-                player.generateStaticWaveform(cardCanvas, audioFile);
             });
 
-            playBtn = card.querySelector('.play-btn');
             playBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (player.currentCard === card) {
@@ -538,6 +1016,12 @@
             return card;
         }
 
+        function setVolume(volume) {
+            player.volume = volume / 100;
+            if (player.currentAudio) {
+                player.currentAudio.volume = player.volume;
+            }
+        }
         let currentPage = 1;
         let totalPages = 1;
         let perPage = 200;
@@ -574,13 +1058,13 @@
                     messageDiv.style.gridColumn = '1/-1';
                     messageDiv.style.textAlign = 'center';
                     messageDiv.style.padding = '2rem';
-                    
+
                     if (search) {
                         messageDiv.textContent = `No files found matching "${search}"`;
                     } else {
                         messageDiv.textContent = 'No audio files found in current directory';
                     }
-                    
+
                     grid.innerHTML = '';
                     grid.appendChild(messageDiv);
                     pagination.style.display = 'none';
@@ -715,8 +1199,23 @@
             }
         });
 
-        loadAudioFiles();
-    </script>
+        // Set up volume control
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValue = document.getElementById('volumeValue');
+
+        volumeSlider.addEventListener('input', (e) => {
+            const volume = parseInt(e.target.value);
+            setVolume(volume);
+            volumeValue.textContent = `${volume}%`;
+        });
+
+        // Initialize MIDI interface
+        player.initMIDI();
+        
+        // Initialize MIDI keys display
+        player.updateMIDIKeys();
+
+        loadAudioFiles();    </script>
 </body>
 
 </html>
